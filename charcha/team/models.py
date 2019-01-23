@@ -5,11 +5,20 @@ ADMIN = 1
 MEMBER = 2
 GUEST = 3
 
+class TeamManager(models.Manager):
+    def get_my_teams(self, user):
+        public_teams = Team.objects.filter(is_public=True)
+        private_teams = Team.objects.filter(members__user=user)
+
+        my_teams = public_teams.union(private_teams)
+        return my_teams
+
 class Team(models.Model):
     'A Team organizes a users, channels and discussions'
     class Meta:
         db_table = 'teams'
 
+    objects = TeamManager()
     name = models.CharField(max_length=120)
 
     # If a team is public, all users have access it to it

@@ -16,6 +16,7 @@ from django.utils.decorators import method_decorator
 
 from .models import UPVOTE, DOWNVOTE, FLAG
 from .models import Post, Comment, Vote, User
+from charcha.team.models import Team
 
 @login_required
 def homepage(request):
@@ -101,12 +102,14 @@ class EditComment(LoginRequiredMixin, View):
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'text']
+        fields = ['team', 'title', 'text']
         labels = {
+            'team': 'Team',
             'title': 'Title',
             'text': 'Details'
         }
         help_text = {
+            'team': 'Team',
             'title': 'Title',
             'text': 'Markdown syntax allowed'
         }
@@ -124,6 +127,7 @@ class StartDiscussionForm(forms.ModelForm):
 class StartDiscussionView(LoginRequiredMixin, View):
     def get(self, request):
         form = StartDiscussionForm(initial={"author": request.user})
+        form.fields['team'].queryset = Team.objects.get_my_teams(request.user)
         return render(request, "submit.html", context={"form": form})
 
     def post(self, request):
