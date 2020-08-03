@@ -50,6 +50,8 @@ def members(spaceid):
 def notify_space(spaceid, event):
     if not _chat_client:
       return
+    if not spaceid:
+      return
     message = _create_message(event)
     try:
       _chat_client.spaces().messages() \
