@@ -361,6 +361,7 @@ class PostsManager(models.Manager):
 
     def get_post_details(self, post_id, user):
         parent_post = Post.objects\
+            .for_user(user)\
             .select_related("author")\
             .prefetch_related(Prefetch("comments", queryset=Comment.objects.select_related("author").filter(is_deleted=False).order_by('submission_time')))\
             .select_related("group")\

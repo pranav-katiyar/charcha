@@ -112,8 +112,11 @@ class CommentForm(forms.ModelForm):
 
 class PostView(LoginRequiredMixin, View):
     def get(self, request, post_id, slug=None):
-        post, child_posts = Post.objects.get_post_details(post_id, 
-                    request.user)
+        try:
+            post, child_posts = Post.objects.get_post_details(post_id, 
+                        request.user)
+        except Post.DoesNotExist:
+            raise Http404("Post does not exist")
         if not slug or post.slug != slug:
             post_url = reverse('post', args=[post.id, post.slug])
             return HttpResponsePermanentRedirect(post_url)
