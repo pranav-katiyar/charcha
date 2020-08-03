@@ -276,6 +276,37 @@ class EditChildPostForm(EditPostForm):
         fields = ['html']
         widgets = {'html': forms.HiddenInput()}
 
+class EditPostTagsForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs['readonly'] = True
+
+    class Meta:
+        model = Post
+        fields = ['title', 'html', 'tags']
+        widgets = {'html': forms.HiddenInput()}
+
+class EditPostTagsView(LoginRequiredMixin, View):
+    def get(self, request, post_id):
+        post = get_object_or_404_check_acl(Post, pk=post_id, requester=request.user)
+        if post.parent_post:
+            raise PermissionDenied("Cannot edit tags of a child post")
+        form = EditPostTagsForm(instance=post)
+        return render(request, "edit-post.html", context={"form": form, "mode": "tags-only"})
+    
+    def post(self, request, post_id):
+        post = get_object_or_404_check_acl(Post, pk=post_id, requester=request.user)
+        if post.parent_post:
+            raise PermissionDenied("Cannot edit tags of a child post")
+        form = EditPostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save(commit=False)
+            form.save_m2m()
+            return HttpResponseRedirect(reverse('post', args=[post.id, post.slug]))
+        else:
+            return render(request, "edit-post.html", context={"form": form, "mode": "tags-only"})
+
+            
 class EditPostView(LoginRequiredMixin, View):
     def get(self, request, **kwargs):
         post = get_object_or_404_check_acl(Post, pk=kwargs['post_id'], requester=request.user)
@@ -304,8 +335,6 @@ class EditPostView(LoginRequiredMixin, View):
             post_url = parent_post_url + "#post-" + str(post.id)
         else:
             post_url = reverse('post', args=[post.id, post.slug])
-
-        
         return HttpResponseRedirect(post_url)
 
 @login_required

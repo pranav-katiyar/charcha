@@ -38,8 +38,10 @@ nav a.active {
   font-weight: bold;
 }
 
-.tag { 
+.tag-list {
   font-size: 80%;
+}
+.tag { 
   padding: 3px 5px;
   border: rgba(0,0,0,.125) 1px solid;
   border-radius: 5px;
