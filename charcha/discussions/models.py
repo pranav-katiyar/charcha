@@ -158,6 +158,14 @@ class GchatSpace(models.Model):
     def __str__(self):
         return self.name
 
+class GroupGchatSpace(models.Model):
+    class Meta:
+        db_table = "group_gchat_spaces"
+    
+    group = models.ForeignKey('Group', on_delete=models.PROTECT)
+    gchat_space = models.ForeignKey(GchatSpace, on_delete=models.PROTECT)
+
+
 class GroupsManager(models.Manager):
     def for_user(self, user):
         # Return a queryset that only returns groups the user has access to
@@ -187,7 +195,7 @@ class Group(models.Model):
     purpose = models.CharField(max_length=200, blank=True, help_text="A 1 or 2 sentence explaining the purpose of this group")
     description = models.TextField(max_length=4096, blank=True, help_text="A larger description that can contain links, charter or any other text to better describe the group")
     members = models.ManyToManyField(User, blank=True,verbose_name="Group Members", through='GroupMember', related_name="mygroups", help_text="Additional members to include in this group")
-    gchat_space = models.ForeignKey(GchatSpace, on_delete=models.PROTECT, null=True, blank=True, verbose_name="Google Chat Room", help_text="Charcha will regularly import members from this chat room. By default, each member will have the role 'member'. You can override the role for any member in the group settings screen.")
+    gchat_spaces = models.ManyToManyField(GchatSpace, through=GroupGchatSpace, blank=True, verbose_name="Google Chat Room", help_text="Charcha will regularly import members from this chat room. By default, each member will have the role 'member'. You can override the role for any member in the group settings screen.")
 
     @classmethod
     def get(klass, id, user):
@@ -280,9 +288,10 @@ class Group(models.Model):
         if post.parent_post:
             raise Exception("Did not expect a child post to be created from a group!")
     
-        if not self.gchat_space.is_deleted:
-            space_id = self.gchat_space.space
-            notify_space(space_id, event)
+        for gchat_space in self.gchat_spaces.all():
+            if not gchat_space.is_deleted:
+                space_id = gchat_space.space
+                notify_space(space_id, event)
 
     def get_permissions(self, user):
         permissions = []

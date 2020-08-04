@@ -476,16 +476,24 @@ def google_chatbot(request):
 def sync_members_with_gchat(request, group_id):
     group = get_object_or_404_check_acl(Group, request.user, pk=group_id)
     redirect_url = reverse('edit_group', args=[group_id])
-    gchat_space = group.gchat_space.space
-    if not gchat_space:
-        return redirect(redirect_url)
-
-    gchat_members = get_members_from_gchat(gchat_space)
+    
     members = []
-    for member in gchat_members:
-        gchat_pk = member['member']['name']
-        display_name = member['member']['displayName']
-        members.append([gchat_pk, display_name])
+    unique_members = set()
+    # Fetch members from all gchat groups
+    for gchat_space in group.gchat_spaces.all():
+        gchat_members = get_members_from_gchat(gchat_space.space)
+        for member in gchat_members:
+            gchat_pk = member['member']['name']
+            display_name = member['member']['displayName']
+
+            if gchat_pk in unique_members:
+                continue
+            unique_members.add(gchat_pk)
+            members.append([gchat_pk, display_name])
+    
+    # Prevent complete deletion
+    if not members:
+        return redirect(redirect_url)
     
     group.synchronize_gchat_members(members)
     return redirect(redirect_url)

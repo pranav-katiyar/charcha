@@ -40,8 +40,8 @@ class GroupMemberInline(admin.TabularInline):
     model = Group.members.through
 
 class GroupAdmin(admin.ModelAdmin):
-    fields = ('name', 'group_type', 'purpose', 'description', 'gchat_space', 'is_deleted', )
-    list_display = ('name', 'group_type', 'gchat_space', 'purpose')
+    fields = ('name', 'group_type', 'purpose', 'description', 'is_deleted', )
+    list_display = ('name', 'group_type', 'purpose')
     
 class UserAdmin(admin.ModelAdmin):
     fields = ('username', 'first_name', 'last_name', 'gchat_space', 'gchat_primary_key', 'score', 'email', 'is_active', 'is_staff')
