@@ -430,6 +430,7 @@ class PostsManager(models.Manager):
         posts = Post.objects\
             .select_related('author')\
             .select_related('group')\
+            .only("title", "slug", "submission_time", "last_modified", "last_activity", "post_type", "reaction_summary", "author", "author__id", "author__username", "author__first_name", "author__last_name", "author__avatar", "group", "group__name", "group__group_type")\
             .annotate(lastseen_timestamp=Subquery(LastSeenOnPost.objects.filter(post=OuterRef('pk'), user=user).only('seen').values('seen')[:1]))\
             .filter(
                 Q(Exists(GroupMember.objects.only('id').filter(group=OuterRef('group'), user=user))) | Q(group__group_type=Group.OPEN), 
@@ -500,6 +501,8 @@ class Post(models.Model):
         db_table = "posts"
         index_together = [
             ["submission_time",],
+            ["last_activity",],
+            ["last_modified",],
         ]
     
     objects = PostsManager()

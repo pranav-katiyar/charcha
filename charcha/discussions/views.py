@@ -51,7 +51,7 @@ def homepage(request):
     sort_by = request.GET.get('sort_by', 'newactivity')
     if sort_by not in ('newactivity', 'recentposts'):
         sort_by = 'newactivity'
-    posts = Post.objects.get_post_list(request.user, sort_by=sort_by)
+    posts = Post.objects.get_post_list(request.user, sort_by=sort_by)[:50]
     groups = Group.objects.for_user(request.user).all()
     return render(request, "home.html", context={"posts": posts, "groups": groups, "selected_sort_by": sort_by, "mode":mode})
 
@@ -64,7 +64,7 @@ def group_home(request, group_id):
     sort_by = request.GET.get('sort_by', 'newactivity')
     if sort_by not in ('newactivity', 'recentposts'):
         sort_by = 'newactivity'
-    posts = Post.objects.get_post_list(request.user, group=group, sort_by=sort_by)
+    posts = Post.objects.get_post_list(request.user, group=group, sort_by=sort_by)[:50]
     return render(request, "home.html", context={"posts": posts, "group": group, "recent_tags": recent_tags, "selected_sort_by": sort_by, "mode":mode})
 
 @login_required
@@ -75,7 +75,7 @@ def tag_home(request, tag_id):
     sort_by = request.GET.get('sort_by', 'newactivity')
     if sort_by not in ('newactivity', 'recentposts'):
         sort_by = 'newactivity'
-    posts = Post.objects.get_post_list(request.user, tag=tag, sort_by=sort_by)
+    posts = Post.objects.get_post_list(request.user, tag=tag, sort_by=sort_by)[:50]
     return render(request, "home.html", context={"posts": posts, "tag": tag, "selected_sort_by": sort_by, "mode":mode})
 
 @login_required
