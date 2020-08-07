@@ -139,8 +139,9 @@ $('.upvote-button').click(function(){
       // Add support for @mentions
       attachTribute(trixId);
 
-      // Set the focus to the editor
-      $("#" + trixId).focus();
+      // Don't focus on the trix editor
+      // Otherwise the placeholder text is not shown
+      // $("#" + trixId).focus();
       return true;
     });
   });
