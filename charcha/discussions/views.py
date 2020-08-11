@@ -268,6 +268,9 @@ class NewPostView(LoginRequiredMixin, View):
             return render(request, "new-post.html", context={"form": form})
 
 class EditPostForm(NewPostForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Post
         fields = ['title', 'html', 'tags']
@@ -283,6 +286,8 @@ class EditPostTagsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['title'].widget.attrs['readonly'] = True
+        if 'tags' in self.fields:
+            self.fields['tags'].queryset = Tag.objects.filter(is_visible=True).all()
 
     class Meta:
         model = Post
