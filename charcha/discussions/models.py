@@ -3,6 +3,7 @@ import re
 from itertools import chain
 from django.db import connection
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.db.utils import IntegrityError
 from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -426,7 +427,7 @@ class PostsManager(models.Manager):
         
         return (parent_post, child_posts)
 
-    def get_post_list(self, user, tag=None, group=None, sort_by='recentposts'):
+    def get_post_list(self, user, tag=None, group=None, cursor=None, sort_by='recentposts', max_records=30):
         posts = Post.objects\
             .select_related('author')\
             .select_related('group')\
@@ -441,11 +442,22 @@ class PostsManager(models.Manager):
         if tag:
             posts = posts.filter(Q(Exists(PostTag.objects.only('id').filter(post=OuterRef('pk'), tag=tag))))
 
+        if cursor:
+            cursor = parse_datetime(cursor)
+            if sort_by == 'recentposts':
+                posts = posts.filter(submission_time__lte=cursor)
+            else:
+                posts = posts.filter(last_activity__lte=cursor)
+
         if sort_by == 'recentposts':
             posts = posts.order_by("-submission_time")
         else:
             posts = posts.order_by("-last_activity")
         
+        # Force a list at this point, we are not going to do any more filtering
+        posts = list(posts[:max_records])
+
+        # Identify if the post is read or not
         for post in posts:
             if post.lastseen_timestamp is None:
                 post.is_read = False
@@ -453,7 +465,18 @@ class PostsManager(models.Manager):
                 post.is_read = False
             else:
                 post.is_read = True
-        return posts
+        
+        # Figure out the cursor 
+        # cursor is just the data from which we start searching in the next request
+        # i.e. cursor is used for pagination
+        if posts:
+            if sort_by == 'recentposts':
+                cursor = str(posts[-1].submission_time)
+            else:
+                cursor = str(posts[-1].last_activity)
+        else:
+            cursor = ''
+        return (posts, cursor)
 
     def vote_type_to_string(self, vote_type):
         mapping = {

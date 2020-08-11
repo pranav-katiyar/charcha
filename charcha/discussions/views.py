@@ -5,7 +5,7 @@ import pytz
 import datetime
 from django.utils import timezone
 from uuid import uuid4
-
+from urllib.parse import urlencode
 from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponsePermanentRedirect, Http404
 from django.views import View 
@@ -46,37 +46,35 @@ def prepare_html_for_edit(html):
 
 @login_required
 @never_cache
-def homepage(request):
-    mode = "home"
+def post_list(request, mode, tag_id=None, group_id=None):
     sort_by = request.GET.get('sort_by', 'newactivity')
     if sort_by not in ('newactivity', 'recentposts'):
         sort_by = 'newactivity'
-    posts = Post.objects.get_post_list(request.user, sort_by=sort_by)[:50]
-    groups = Group.objects.for_user(request.user).all()
-    return render(request, "home.html", context={"posts": posts, "groups": groups, "selected_sort_by": sort_by, "mode":mode})
+    cursor = request.GET.get('cursor', None)
+    context = {"selected_sort_by": sort_by, "mode": mode}
 
-@login_required
-@never_cache
-def group_home(request, group_id):
-    mode = "group"
-    group = get_object_or_404_check_acl(Group, requester=request.user, pk=group_id)
-    recent_tags = group.recent_tags()
-    sort_by = request.GET.get('sort_by', 'newactivity')
-    if sort_by not in ('newactivity', 'recentposts'):
-        sort_by = 'newactivity'
-    posts = Post.objects.get_post_list(request.user, group=group, sort_by=sort_by)[:50]
-    return render(request, "home.html", context={"posts": posts, "group": group, "recent_tags": recent_tags, "selected_sort_by": sort_by, "mode":mode})
-
-@login_required
-@never_cache
-def tag_home(request, tag_id):
-    mode = "tag"
-    tag = get_object_or_404_check_acl(Tag, requester=request.user, pk=tag_id)
-    sort_by = request.GET.get('sort_by', 'newactivity')
-    if sort_by not in ('newactivity', 'recentposts'):
-        sort_by = 'newactivity'
-    posts = Post.objects.get_post_list(request.user, tag=tag, sort_by=sort_by)[:50]
-    return render(request, "home.html", context={"posts": posts, "tag": tag, "selected_sort_by": sort_by, "mode":mode})
+    next_page_params = {"sort_by": sort_by}
+    if mode == 'home':
+        posts, cursor = Post.objects.get_post_list(request.user, cursor=cursor, sort_by=sort_by)
+        groups = Group.objects.for_user(request.user).all()
+        context.update({"posts": posts, "groups": groups})
+        next_page_url = reverse('home')
+    elif mode == 'group':
+        group = get_object_or_404_check_acl(Group, requester=request.user, pk=group_id)
+        posts, cursor = Post.objects.get_post_list(request.user, group=group, cursor=cursor, sort_by=sort_by)
+        recent_tags = group.recent_tags()
+        context.update({"posts": posts, "group": group, "recent_tags": recent_tags})
+        next_page_url = reverse('group_home', args=[group_id])
+    elif mode == 'tag':
+        tag = get_object_or_404_check_acl(Tag, requester=request.user, pk=tag_id)
+        posts, cursor = Post.objects.get_post_list(request.user, tag=tag, cursor=cursor, sort_by=sort_by)[:50]
+        context.update({"posts": posts, "tag": tag})
+        next_page_url = reverse('tag_home', args=[tag_id])
+    
+    next_page_params.update({"cursor": cursor})
+    next_page_url = next_page_url + "?" + urlencode(next_page_params)
+    context.update({'next_page_url': next_page_url})
+    return render(request, "home.html", context=context)
 
 @login_required
 def set_user_timezone(request):

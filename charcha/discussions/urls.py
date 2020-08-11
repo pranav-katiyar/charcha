@@ -2,7 +2,7 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.homepage, name="home"),
+    url(r'^$', views.post_list, {"mode": "home", "group_id": None, "tag_id": None}, name="home"),
     
     url(r'^posts/(?P<post_id>\d+)/add-comment$', views.AddEditComment.as_view(), name="add_comment"),
     url(r'^comments/(?P<id>\d+)/edit$', views.AddEditComment.as_view(), name="edit_comment"),
@@ -25,9 +25,9 @@ urlpatterns = [
     url(r'^groups/(?P<group_id>\d+)/edit/$', views.edit_group_view, name="edit_group"),
     url(r'^groups/(?P<group_id>\d+)/sync-members-with-gchat/$', views.sync_members_with_gchat, name="sync-members-with-gchat"),
     url(r'^groups/(?P<group_id>\d+)/new/(?P<post_type>\w+)/$', views.NewPostView.as_view(), name="new-post"),
-    url(r'^groups/(?P<group_id>\d+)/$', views.group_home, name="group_home"),
+    url(r'^groups/(?P<group_id>\d+)/$', views.post_list, {"mode": "group", "tag_id": None}, name="group_home"),
     
-    url(r'^tags/(?P<tag_id>\d+)/$', views.tag_home, name="tag_home"),
+    url(r'^tags/(?P<tag_id>\d+)/$', views.post_list, {"mode": "tag", "group_id": None}, name="tag_home"),
 
 
     url(r'^profile/me/$', views.myprofile, name="myprofile"),

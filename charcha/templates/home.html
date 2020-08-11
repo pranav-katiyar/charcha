@@ -93,6 +93,12 @@
     <span class="mt-2 unread-indicator"></span>
     {% endif %}
   </div>
+
+  {% if forloop.last %}
+    <div class="d-flex justify-content-end mt-4">
+      <a class="btn charcha-btn" href="{{ next_page_url }}">next page&nbsp;&gt;</a>
+    </div>
+  {% endif %}
   {% endfor %}
   </div>
 </div>  
