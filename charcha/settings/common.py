@@ -140,23 +140,10 @@ DATABASES = {
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 
-# Get configuration of email from environment variables
-EMAIL_URL = os.environ.get('EMAIL_URL')
-SENDGRID_USERNAME = os.environ.get('SENDGRID_USERNAME')
-SENDGRID_PASSWORD = os.environ.get('SENDGRID_PASSWORD')
-if not EMAIL_URL and SENDGRID_USERNAME and SENDGRID_PASSWORD:
-    EMAIL_URL = 'smtp://%s:%s@smtp.sendgrid.net:587/?tls=True' % (
-        SENDGRID_USERNAME, SENDGRID_PASSWORD)
-email_config = dj_email_url.parse(EMAIL_URL or 'console://')
-
-EMAIL_BACKEND = email_config['EMAIL_BACKEND']
-EMAIL_FILE_PATH = email_config['EMAIL_FILE_PATH']
-EMAIL_HOST_USER = email_config['EMAIL_HOST_USER']
-EMAIL_HOST_PASSWORD = email_config['EMAIL_HOST_PASSWORD']
-EMAIL_HOST = email_config['EMAIL_HOST']
-EMAIL_PORT = email_config['EMAIL_PORT']
-EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
-EMAIL_USE_SSL = email_config['EMAIL_USE_SSL']
+EMAIL_HOST = os.environ.get('MAILGUN_SMTP_SERVER', '')
+EMAIL_PORT = os.environ.get('MAILGUN_SMTP_PORT', '')
+EMAIL_HOST_USER = os.environ.get('MAILGUN_SMTP_LOGIN', '')
+EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD', '')
 
 AUTH_USER_MODEL = 'discussions.User'
 

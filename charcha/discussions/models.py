@@ -15,6 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import F, Q, Prefetch, OuterRef, Subquery, Count, Exists
 from django.urls import reverse
 from .bot import notify_space
+from .notifications import notify_user
 from bleach.sanitizer import Cleaner
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -111,7 +112,7 @@ def send_notification_on_mentions(post_or_comment):
     
     # actually notify the users
     for user in users:
-        notify_space(user.gchat_space, event)
+        notify_user(user, event)
     
     # return the set of users that were notified
     return set([u.id for u in users])
@@ -603,10 +604,6 @@ class Post(models.Model):
         }
 
         for subscription in PostSubscribtion.objects.filter(post=self).all():
-            # If user hasn't added charcha bot, skip notification
-            if not subscription.user.gchat_space:
-                continue
-            
             # If users have a @mention in the post, they would have already received a notification
             # So do not send another notification
             if subscription.user.id in already_notified_users:
@@ -627,8 +624,7 @@ class Post(models.Model):
                     send_notification = True
             
             if send_notification:
-                space_id = subscription.user.gchat_space
-                notify_space(space_id, event)
+                notify_user(subscription.user, event)
 
 
     def upvote(self, user):
@@ -738,10 +734,6 @@ class Post(models.Model):
         }
         
         for subscription in PostSubscribtion.objects.filter(post=parent_post).all():
-            # If user hasn't added charcha bot, skip notification
-            if not subscription.user.gchat_space:
-                continue
-
             # If users have a @mention in the comment, they would have already received a notification
             # So do not send another notification
             if subscription.user.id in already_notified_users:
@@ -762,8 +754,7 @@ class Post(models.Model):
                     send_notification = True
             
             if send_notification:
-                space_id = subscription.user.gchat_space
-                notify_space(space_id, event)
+                notify_user(subscription.user, event)
 
     def __str__(self):
         if self.title:
