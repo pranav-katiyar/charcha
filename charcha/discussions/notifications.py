@@ -14,19 +14,21 @@ html_cleaner = Cleaner(
 
 
 def notify_via_email(email, event):
-    html = "<b>" + event['line1'] + "</b><br/>"
-    html += "<p>" + event['line2'] + "</p><br/>"
-    html += "<a href='" + event['link'] + "'>" + event['link_title'] + "</a>"
-    cleaned_html = html_cleaner.clean(html)
-    plaintext = plain_text_cleaner.clean(html)
-    send_mail(
-        subject=event['heading'] + ' ' + event['sub_heading'],
-        from_email='noreply-charcha@hashedin.com',
-        recipient_list=[email],
-        fail_silently=False,
-        message=plaintext,
-        html_message=cleaned_html
-    )
+    # skip sending emails for now till we remove our sandbox restrictions
+    pass
+    # html = "<b>" + event['line1'] + "</b><br/>"
+    # html += "<p>" + event['line2'] + "</p><br/>"
+    # html += "<a href='" + event['link'] + "'>" + event['link_title'] + "</a>"
+    # cleaned_html = html_cleaner.clean(html)
+    # plaintext = plain_text_cleaner.clean(html)
+    # send_mail(
+    #     subject=event['heading'] + ' ' + event['sub_heading'],
+    #     from_email='noreply-charcha@hashedin.com',
+    #     recipient_list=[email],
+    #     fail_silently=False,
+    #     message=plaintext,
+    #     html_message=cleaned_html
+    # )
 
 def notify_user(user, event):
     if user.gchat_space:
