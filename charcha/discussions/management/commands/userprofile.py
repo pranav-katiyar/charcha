@@ -9,7 +9,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from oauth2client.client import GoogleCredentials
 import django
 from django.core.management.base import BaseCommand, CommandError
-from charcha.discussions.models import User, UserProfile
+#from charcha.discussions.models import User, UserProfile
 from django.utils import timezone
 import markdown2
 from apiclient.discovery import build
