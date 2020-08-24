@@ -1,36 +1,23 @@
 {% extends "base.html" %}
 {% load tz %}
-{% block title %}Start a discussion{% endblock %}
+{% block title %}{{user.first_name|title}} {{user.last_name|title}}'s Profile{% endblock %}
 
 {% block pagecss %}
 {% endblock %}
 
 {% block content %}
 <div class="col-md-8">
-<h1>{{ user.username }}</h1>
-{% if request.user.id == user.id %}
-<div>
-    <form action="{% url 'set_timezone' %}" method="POST">
-        {% csrf_token %}
-        <div>Current Timezone: {{ request.user.tzname }}</div>
-        <label for="timezone">Time zone:</label>
-        <select name="timezone">
-            {% for tz in timezones %}
-            <option value="{{ tz }}"{% if tz == request.user.tzname %} selected{% endif %}>{{ tz }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Set">
-    </form>    
-</div>
-{% endif %}
-<p>
-    To add :
-    <ol>
-        <li>Discussions started by me</li>
-        <li>All my comments</li>
-        <li>Upvoted / Downvoted Discussions</li>
-        <li>Upvoted / Downvoted Comments</li>
-    </ol>
-</p>
+  <div class="d-flex">
+    <img class="p-2 border mr-2 mb-2" width="150px" height="150px" src="{{user.avatar}}"/>
+    <div>
+        <h1>{{ user.first_name | title }} {{user.last_name | title }}</h1>
+        <div><strong>Designation: </strong>{{user.designation}}</div>
+        <div><strong>Band: </strong>{{user.band}}</div>
+        <div class="mb-2"><strong>Joined On: </strong>{{user.joining_date}}</div>
+        <div>
+          <a class="btn btn-sm charcha-btn mr-2" target="_blank" href="{% url "profile_slide" user.id %}">View Google Slides</a>
+        </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

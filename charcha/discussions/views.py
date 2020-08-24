@@ -31,6 +31,7 @@ from .models import GroupMember, Role
 from .models import GchatSpace
 from .models import comment_cleaner
 from .bot import members as get_members_from_gchat
+from .drive import get_hasher_profile_url
 
 def get_object_or_404_check_acl(klass, requester, *args, **kwargs):
     'Similar to get_object_or_404, but checks that the user has access to the object that is requested'
@@ -375,12 +376,18 @@ def subscribe_to_post(request, post_id):
 
 @login_required
 def myprofile(request):
-    return render(request, "profile.html", context={"user": request.user, 'timezones': pytz.common_timezones})
+    return render(request, "my-profile.html", context={"user": request.user, 'timezones': pytz.common_timezones})
 
 @login_required
 def profile(request, userid):
     user = get_object_or_404(User, pk=userid)
     return render(request, "profile.html", context={"user": user, 'timezones': pytz.common_timezones })
+
+@login_required
+def profile_slide(request, userid):
+    user = get_object_or_404(User, pk=userid)
+    slide_url = get_hasher_profile_url(request.user, user.email)
+    return redirect(slide_url)
 
 @login_required
 @cache_control(private=True, max_age=3600)

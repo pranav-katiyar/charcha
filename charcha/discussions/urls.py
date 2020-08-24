@@ -29,7 +29,7 @@ urlpatterns = [
     
     url(r'^tags/(?P<tag_id>\d+)/$', views.post_list, {"mode": "tag", "group_id": None}, name="tag_home"),
 
-
+    url(r'^profile/(?P<userid>\d+)/slide/$', views.profile_slide, name="profile_slide"),
     url(r'^profile/me/$', views.myprofile, name="myprofile"),
     url(r'^profile/me/set-timezone$', views.set_user_timezone, name="set_timezone"),
     url(r'^profile/(?P<userid>\d+)/$', views.profile, name="profile"),

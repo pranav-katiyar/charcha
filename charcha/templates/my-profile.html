@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Start a discussion{% endblock %}
+
+{% block pagecss %}
+{% endblock %}
+
+{% block content %}
+{% if request.user.id == user.id %}
+<div class="col-md-8">
+<h1>{{ user.username }}</h1>
+
+<div>
+    <form action="{% url 'set_timezone' %}" method="POST">
+        {% csrf_token %}
+        <div>Current Timezone: {{ request.user.tzname }}</div>
+        <label for="timezone">Time zone:</label>
+        <select name="timezone">
+            {% for tz in timezones %}
+            <option value="{{ tz }}"{% if tz == request.user.tzname %} selected{% endif %}>{{ tz }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Set">
+    </form>    
+</div>
+{% endif %}
+{% endblock %}
