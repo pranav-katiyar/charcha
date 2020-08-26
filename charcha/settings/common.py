@@ -140,10 +140,11 @@ DATABASES = {
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 
-EMAIL_HOST = os.environ.get('MAILGUN_SMTP_SERVER', '')
-EMAIL_PORT = os.environ.get('MAILGUN_SMTP_PORT', '')
-EMAIL_HOST_USER = os.environ.get('MAILGUN_SMTP_LOGIN', '')
-EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD', '')
+EMAIL_USE_SSL = True
+EMAIL_HOST = os.environ.get('SMTP_SERVER', '')
+EMAIL_PORT = os.environ.get('SMTP_PORT', '')
+EMAIL_HOST_USER = os.environ.get('SMTP_LOGIN', '')
+EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 
 AUTH_USER_MODEL = 'discussions.User'
 
