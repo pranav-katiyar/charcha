@@ -428,16 +428,32 @@ class PostsManager(models.Manager):
         
         return (parent_post, child_posts)
 
-    def get_post_list(self, user, tag=None, group=None, cursor=None, sort_by='recentposts', max_records=30):
-        posts = Post.objects\
+    def get_post_list(self, user, tag=None, group=None, cursor=None, search_term=None, include_child_posts=False, sort_by='recentposts', max_records=30):
+        posts = Post.objects.all()
+        fields_to_select = ["title", "slug", "submission_time", "last_modified", 
+            "last_activity", "post_type", "reaction_summary", 
+            "author", "author__id", "author__username", "author__first_name", 
+            "author__last_name", "author__avatar", 
+            "group", "group__name", "group__group_type", 
+            "parent_post__id", "parent_post__title", "parent_post__slug"]
+
+        if search_term:
+            posts = posts.filter(Q(title__icontains=search_term) | Q(html__icontains=search_term))
+            fields_to_select.append("html")
+
+        if not include_child_posts:
+            posts = posts.filter(parent_post=None)
+
+        posts = posts\
+            .select_related('parent_post')\
             .select_related('author')\
             .select_related('group')\
-            .only("title", "slug", "submission_time", "last_modified", "last_activity", "post_type", "reaction_summary", "author", "author__id", "author__username", "author__first_name", "author__last_name", "author__avatar", "group", "group__name", "group__group_type")\
+            .only(*fields_to_select)\
             .annotate(lastseen_timestamp=Subquery(LastSeenOnPost.objects.filter(post=OuterRef('pk'), user=user).only('seen').values('seen')[:1]))\
             .filter(
-                Q(Exists(GroupMember.objects.only('id').filter(group=OuterRef('group'), user=user))) | Q(group__group_type=Group.OPEN), 
-                parent_post=None
+                Q(Exists(GroupMember.objects.only('id').filter(group=OuterRef('group'), user=user))) | Q(group__group_type=Group.OPEN)
             )
+        
         if group:
             posts = posts.filter(group=group)
         if tag:

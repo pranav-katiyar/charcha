@@ -33,7 +33,9 @@ urlpatterns = [
     url(r'^profile/me/$', views.myprofile, name="myprofile"),
     url(r'^profile/me/set-timezone$', views.set_user_timezone, name="set_timezone"),
     url(r'^profile/(?P<userid>\d+)/$', views.profile, name="profile"),
-    
+
+    url(r'^search/$', views.search, name="search"),
+
     url(r'^api/posts/(?P<post_id>\d+)/upvote$', views.upvote_post, name="upvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/downvote$', views.downvote_post, name="downvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/lastseenat/$', views.update_post_last_seen_at, name="update-last-seen-at"),

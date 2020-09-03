@@ -3,6 +3,7 @@ import re
 import os
 import pytz
 import datetime
+from bleach.sanitizer import Cleaner
 from django.utils import timezone
 from uuid import uuid4
 from urllib.parse import urlencode
@@ -343,6 +344,24 @@ class EditPostView(LoginRequiredMixin, View):
         else:
             post_url = reverse('post', args=[post.id, post.slug])
         return HttpResponseRedirect(post_url)
+
+
+@login_required
+@require_http_methods(['GET'])
+def search(request):
+    def highlighter(matchobj):
+        return '<span class="highlight">' + matchobj.group(0) + '</span>'
+
+    cleaner = Cleaner(tags=[], attributes={}, strip=True)
+    search_term = request.GET.get('q', '')
+    posts, cursor = Post.objects.get_post_list(request.user, search_term=search_term, include_child_posts=True, sort_by='last_activity')
+
+    for post in posts:
+        snippet = cleaner.clean(post.html)
+        snippet = re.sub(search_term, highlighter, snippet, flags=re.IGNORECASE)
+        post.snippet = snippet
+
+    return render(request, "search.html", context={"search_term": search_term, "results": {"posts": posts}})
 
 @login_required
 @require_http_methods(['POST'])

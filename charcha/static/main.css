@@ -178,3 +178,7 @@ span.mention {
   border-radius: 50%;
   display: inline-block;
 }
+
+.highlight {
+  background-color: yellow;
+}
