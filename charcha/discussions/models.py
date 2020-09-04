@@ -434,18 +434,19 @@ class PostsManager(models.Manager):
             "last_activity", "post_type", "reaction_summary", 
             "author", "author__id", "author__username", "author__first_name", 
             "author__last_name", "author__avatar", 
-            "group", "group__name", "group__group_type", 
-            "parent_post__id", "parent_post__title", "parent_post__slug"]
+            "group", "group__name", "group__group_type"]
 
         if search_term:
             posts = posts.filter(Q(title__icontains=search_term) | Q(html__icontains=search_term))
             fields_to_select.append("html")
 
-        if not include_child_posts:
+        if include_child_posts:
+            posts = posts.select_related('parent_post')
+            fields_to_select.extend(["parent_post__id", "parent_post__title", "parent_post__slug"])
+        else:
             posts = posts.filter(parent_post=None)
 
         posts = posts\
-            .select_related('parent_post')\
             .select_related('author')\
             .select_related('group')\
             .only(*fields_to_select)\
