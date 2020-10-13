@@ -284,3 +284,19 @@ $(document).ready(function() {
   attachTribute('trix-new-post');
   getUsers();
 });
+
+
+/* 
+  * disable search on empty search string
+  * trim the search value to make sure no extra white space
+*/
+$("#search-form").submit((event) => {
+  const input = $("#search-form :input[type=search]");
+  const val = $(input).val().trim();
+
+  if (!val || val === "") {
+    return event.preventDefault();
+  }
+
+  $(input).val(val)
+});
